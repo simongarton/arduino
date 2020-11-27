@@ -17,26 +17,18 @@ void setDot(int x,int y, int isOn){
 }
  
 void show(void *u, int w, int h){
-    printf("show\n");
   int (*univ)[w] = u;
-  char newstr[260] = "";
   int index = 0;
   for (int y = 0; y < h; y++){
     for (int x = 0; x < w; x++){
       int sh=(univ[y][x]==1);
       setDot(x,y,sh); 
-      if (sh == 0) {
-      newstr[index] = ' ';
-      } else {
-          newstr[index] = 'O';
-      }
       index ++;
     }
   }  
-  printf("%s\n",newstr);
 }
 
-void evolve(void *u, int w, int h){
+int evolve(void *u, int w, int h){
   unsigned (*univ)[w] = u;
   unsigned newar[h][w];
  
@@ -49,15 +41,17 @@ void evolve(void *u, int w, int h){
             n++;
       if (univ[y][x]) n--;
       newar[y][x] = (n == 3 || (n == 2 && univ[y][x]));
- 
     }
   } 
  
+  int living = 0;
   for (int y = 0; y < h; y++){
     for (int x = 0; x < w; x++){
       univ[y][x] = newar[y][x];
+      living = living + newar[y][x];
     }
   }
+  return living;
 }
 
 void game(int w, int h) {
@@ -68,18 +62,32 @@ void game(int w, int h) {
     }
   }
   int sc=0;
+  int last = 0;
   while (1) {
     show(univ, w, h);
-    evolve(univ, w, h);
+    int living = evolve(univ, w, h);
+    printf("%d\n",living);
     delay(150);
-    sc++;if(sc>150)break;
+    sc++;
+    if (living == 0 || living == last) {
+      for (int x = 0; x < w; x++){
+        for (int y = 0; y < h; y++){
+          univ[y][x] = arandom(0, 100)>65 ? 1 : 0;
+        }
+      }
+    }
+    if (arandom(0,10) == 0) {
+      int x = arandom(0,16);
+      int y = arandom(0,16);
+      univ[y][x] = 1;
+    }
+    last = living;
   }
 }
 
 void loop() {
   game(16,16);//w,h
 }
-
 
 
 int main(void) {
